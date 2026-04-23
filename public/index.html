@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SportsHub SPA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); min-height: 100vh; font-family: sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="p-6">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-white text-center mb-8">SportsHub Athlete Manager</h1>
+
+        <div class="glass p-6 rounded-2xl shadow-xl mb-6">
+            <h2 id="formTitle" class="text-xl font-semibold mb-4 text-gray-800">Add New Athlete</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input type="hidden" id="personId">
+                <input type="text" id="name" placeholder="Name" class="p-2 border rounded-lg outline-indigo-500">
+                <input type="text" id="sports" placeholder="Sports (split by comma)" class="p-2 border rounded-lg outline-indigo-500">
+                <div class="flex gap-2">
+                    <button onclick="saveData()" id="saveBtn" class="flex-1 bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700">Save</button>
+                    <button onclick="resetForm()" id="cancelBtn" class="hidden flex-1 bg-gray-200 text-gray-700 font-bold py-2 rounded-lg hover:bg-gray-300">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass p-4 rounded-xl shadow-lg mb-6 flex flex-wrap gap-4">
+            <input type="text" id="nameSearch" onkeyup="filter()" placeholder="🔍 Search Name" class="flex-1 p-2 bg-white rounded-lg border-none shadow-inner">
+            <input type="text" id="sportSearch" onkeyup="filter()" placeholder="🏀 Filter by Sport" class="flex-1 p-2 bg-white rounded-lg border-none shadow-inner">
+        </div>
+
+        <div id="list" class="space-y-4"></div>
+    </div>
+
+    <script>
+        async function fetchAll() {
+            const res = await fetch('/api/persons');
+            const data = await res.json();
+            const container = document.getElementById('list');
+            
+            container.innerHTML = data.map(p => `
+                <div class="person-item glass p-5 rounded-xl flex justify-between items-center shadow-md transition-all hover:scale-[1.01]">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800">${p.name}</h3>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            ${p.favoriteSports.map(s => `<span class="sport-tag px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full">${s}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="editMode('${p._id}', '${p.name}', '${p.favoriteSports.join(', ')}')" class="text-indigo-600 font-semibold hover:underline">Edit</button>
+                        <button onclick="deletePerson('${p._id}')" class="text-red-500 font-semibold hover:underline">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function saveData() {
+            const id = document.getElementById('personId').value;
+            const payload = {
+                name: document.getElementById('name').value,
+                sports: document.getElementById('sports').value
+            };
+
+            if(!payload.name || !payload.sports) return alert("Fields cannot be empty");
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/persons/${id}` : '/api/persons';
+
+            await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            resetForm();
+            fetchAll();
+        }
+
+        async function deletePerson(id) {
+            if(confirm("Are you sure?")) {
+                await fetch(`/api/persons/${id}`, { method: 'DELETE' });
+                fetchAll();
+            }
+        }
+
+        function editMode(id, name, sports) {
+            document.getElementById('personId').value = id;
+            document.getElementById('name').value = name;
+            document.getElementById('sports').value = sports;
+            document.getElementById('formTitle').innerText = "Edit Profile";
+            document.getElementById('saveBtn').innerText = "Update";
+            document.getElementById('cancelBtn').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetForm() {
+            document.getElementById('personId').value = '';
+            document.getElementById('name').value = '';
+            document.getElementById('sports').value = '';
+            document.getElementById('formTitle').innerText = "Add New Athlete";
+            document.getElementById('saveBtn').innerText = "Save";
+            document.getElementById('cancelBtn').classList.add('hidden');
+        }
+
+        function filter() {
+            const nQuery = document.getElementById('nameSearch').value.toLowerCase();
+            const sQuery = document.getElementById('sportSearch').value.toLowerCase();
+            
+            document.querySelectorAll('.person-item').forEach(item => {
+                const name = item.querySelector('h3').innerText.toLowerCase();
+                const sports = item.innerText.toLowerCase();
+                const matches = name.includes(nQuery) && sports.includes(sQuery);
+                item.style.display = matches ? 'flex' : 'none';
+            });
+        }
+
+        fetchAll();
+    </script>
+</body>
+</html>
