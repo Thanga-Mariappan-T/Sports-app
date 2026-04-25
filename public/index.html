@@ -1,123 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SportsHub SPA</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); min-height: 100vh; font-family: sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SportsHub Pro</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body{font-family:Inter,sans-serif;background:radial-gradient(circle at top,#4338ca,#111827 65%);min-height:100vh}
+.glass{background:rgba(255,255,255,.12);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.15)}
+</style>
 </head>
-<body class="p-6">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-bold text-white text-center mb-8">SportsHub Athlete Manager</h1>
-
-        <div class="glass p-6 rounded-2xl shadow-xl mb-6">
-            <h2 id="formTitle" class="text-xl font-semibold mb-4 text-gray-800">Add New Athlete</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <input type="hidden" id="personId">
-                <input type="text" id="name" placeholder="Name" class="p-2 border rounded-lg outline-indigo-500">
-                <input type="text" id="sports" placeholder="Sports (split by comma)" class="p-2 border rounded-lg outline-indigo-500">
-                <div class="flex gap-2">
-                    <button onclick="saveData()" id="saveBtn" class="flex-1 bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700">Save</button>
-                    <button onclick="resetForm()" id="cancelBtn" class="hidden flex-1 bg-gray-200 text-gray-700 font-bold py-2 rounded-lg hover:bg-gray-300">Cancel</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="glass p-4 rounded-xl shadow-lg mb-6 flex flex-wrap gap-4">
-            <input type="text" id="nameSearch" onkeyup="filter()" placeholder="🔍 Search Name" class="flex-1 p-2 bg-white rounded-lg border-none shadow-inner">
-            <input type="text" id="sportSearch" onkeyup="filter()" placeholder="🏀 Filter by Sport" class="flex-1 p-2 bg-white rounded-lg border-none shadow-inner">
-        </div>
-
-        <div id="list" class="space-y-4"></div>
-    </div>
-
-    <script>
-        async function fetchAll() {
-            const res = await fetch('/api/persons');
-            const data = await res.json();
-            const container = document.getElementById('list');
-            
-            container.innerHTML = data.map(p => `
-                <div class="person-item glass p-5 rounded-xl flex justify-between items-center shadow-md transition-all hover:scale-[1.01]">
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-800">${p.name}</h3>
-                        <div class="flex flex-wrap gap-2 mt-2">
-                            ${p.favoriteSports.map(s => `<span class="sport-tag px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full">${s}</span>`).join('')}
-                        </div>
-                    </div>
-                    <div class="flex gap-3">
-                        <button onclick="editMode('${p._id}', '${p.name}', '${p.favoriteSports.join(', ')}')" class="text-indigo-600 font-semibold hover:underline">Edit</button>
-                        <button onclick="deletePerson('${p._id}')" class="text-red-500 font-semibold hover:underline">Delete</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        async function saveData() {
-            const id = document.getElementById('personId').value;
-            const payload = {
-                name: document.getElementById('name').value,
-                sports: document.getElementById('sports').value
-            };
-
-            if(!payload.name || !payload.sports) return alert("Fields cannot be empty");
-
-            const method = id ? 'PUT' : 'POST';
-            const url = id ? `/api/persons/${id}` : '/api/persons';
-
-            await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            resetForm();
-            fetchAll();
-        }
-
-        async function deletePerson(id) {
-            if(confirm("Are you sure?")) {
-                await fetch(`/api/persons/${id}`, { method: 'DELETE' });
-                fetchAll();
-            }
-        }
-
-        function editMode(id, name, sports) {
-            document.getElementById('personId').value = id;
-            document.getElementById('name').value = name;
-            document.getElementById('sports').value = sports;
-            document.getElementById('formTitle').innerText = "Edit Profile";
-            document.getElementById('saveBtn').innerText = "Update";
-            document.getElementById('cancelBtn').classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function resetForm() {
-            document.getElementById('personId').value = '';
-            document.getElementById('name').value = '';
-            document.getElementById('sports').value = '';
-            document.getElementById('formTitle').innerText = "Add New Athlete";
-            document.getElementById('saveBtn').innerText = "Save";
-            document.getElementById('cancelBtn').classList.add('hidden');
-        }
-
-        function filter() {
-            const nQuery = document.getElementById('nameSearch').value.toLowerCase();
-            const sQuery = document.getElementById('sportSearch').value.toLowerCase();
-            
-            document.querySelectorAll('.person-item').forEach(item => {
-                const name = item.querySelector('h3').innerText.toLowerCase();
-                const sports = item.innerText.toLowerCase();
-                const matches = name.includes(nQuery) && sports.includes(sQuery);
-                item.style.display = matches ? 'flex' : 'none';
-            });
-        }
-
-        fetchAll();
-    </script>
+<body class="p-4 md:p-8 text-white">
+<div class="max-w-6xl mx-auto">
+<header class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<div>
+<h1 class="text-4xl font-black">🏆 SportsHub Pro</h1>
+<p class="text-white/70">Modern athlete management dashboard</p>
+</div>
+<div class="glass rounded-2xl px-5 py-3 grid grid-cols-3 gap-4 text-center">
+<div><p id="countAll" class="text-2xl font-bold">0</p><span class="text-xs text-white/70">Athletes</span></div>
+<div><p id="countSports" class="text-2xl font-bold">0</p><span class="text-xs text-white/70">Sports</span></div>
+<div><p id="liveClock" class="text-sm font-semibold"></p><span class="text-xs text-white/70">Live</span></div>
+</div>
+</header>
+<div class="grid lg:grid-cols-3 gap-6">
+<section class="glass rounded-3xl p-6 lg:col-span-1">
+<h2 id="formTitle" class="text-2xl font-bold mb-4">Add Athlete</h2>
+<input type="hidden" id="personId">
+<div class="space-y-4">
+<input id="name" placeholder="Athlete name" class="w-full p-3 rounded-xl text-gray-900">
+<input id="sports" placeholder="Cricket, Football, Tennis" class="w-full p-3 rounded-xl text-gray-900">
+<div class="flex gap-3">
+<button onclick="saveData()" id="saveBtn" class="flex-1 bg-indigo-500 hover:bg-indigo-600 rounded-xl py-3 font-bold">Save</button>
+<button onclick="resetForm()" id="cancelBtn" class="hidden flex-1 bg-white/20 rounded-xl py-3 font-bold">Cancel</button>
+</div>
+</div>
+</section>
+<section class="lg:col-span-2 space-y-5">
+<div class="glass rounded-3xl p-5 grid md:grid-cols-2 gap-4">
+<input id="nameSearch" onkeyup="filter()" placeholder="🔍 Search by name" class="p-3 rounded-xl text-gray-900">
+<input id="sportSearch" onkeyup="filter()" placeholder="⚽ Filter by sport" class="p-3 rounded-xl text-gray-900">
+</div>
+<div id="list" class="grid md:grid-cols-2 gap-4"></div>
+</section>
+</div>
+</div>
+<script>
+function clock(){document.getElementById('liveClock').innerText=new Date().toLocaleTimeString()} setInterval(clock,1000);clock();
+async function fetchAll(){const res=await fetch('/api/persons');const data=await res.json();render(data);stats(data)}
+function stats(data){document.getElementById('countAll').innerText=data.length;const s=new Set();data.forEach(p=>p.favoriteSports.forEach(x=>s.add(x)));document.getElementById('countSports').innerText=s.size}
+function render(data){const c=document.getElementById('list');if(!data.length){c.innerHTML='<div class="glass p-6 rounded-2xl">No athletes found</div>';return;} c.innerHTML=data.map(p=>`<div class='person-item glass rounded-3xl p-5 shadow-xl hover:-translate-y-1 transition'> <div class='flex justify-between gap-3'><div><h3 class='text-xl font-bold'>${p.name}</h3><div class='mt-3 flex flex-wrap gap-2'>${p.favoriteSports.map(s=>`<span class='px-3 py-1 rounded-full bg-white/20 text-xs'>${s}</span>`).join('')}</div></div></div><div class='mt-4 flex gap-3'><button onclick="editMode('${p._id}','${p.name}','${p.favoriteSports.join(', ')}')" class='flex-1 bg-indigo-500 rounded-xl py-2'>Edit</button><button onclick="deletePerson('${p._id}')" class='flex-1 bg-red-500 rounded-xl py-2'>Delete</button></div></div>`).join('')}
+async function saveData(){const id=personId.value;const payload={name:name.value.trim(),sports:sports.value.trim()};if(!payload.name||!payload.sports)return alert('Fill all fields');const method=id?'PUT':'POST';const url=id?`/api/persons/${id}`:'/api/persons';await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});resetForm();fetchAll()}
+async function deletePerson(id){if(confirm('Delete athlete?')){await fetch(`/api/persons/${id}`,{method:'DELETE'});fetchAll()}}
+function editMode(id,n,s){personId.value=id;name.value=n;sports.value=s;formTitle.innerText='Edit Athlete';saveBtn.innerText='Update';cancelBtn.classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'})}
+function resetForm(){personId.value='';name.value='';sports.value='';formTitle.innerText='Add Athlete';saveBtn.innerText='Save';cancelBtn.classList.add('hidden')}
+function filter(){const nq=nameSearch.value.toLowerCase(),sq=sportSearch.value.toLowerCase();document.querySelectorAll('.person-item').forEach(i=>{const t=i.innerText.toLowerCase();const nm=i.querySelector('h3').innerText.toLowerCase();i.style.display=(nm.includes(nq)&&t.includes(sq))?'block':'none'})}
+fetchAll();
+</script>
 </body>
 </html>
